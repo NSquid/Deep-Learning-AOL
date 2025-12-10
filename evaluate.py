@@ -1,7 +1,3 @@
-"""
-Evaluation script for plant disease classification models.
-Generates confusion matrix, classification reports, and visualizations.
-"""
 import torch
 import torch.nn as nn
 import numpy as np
@@ -22,26 +18,13 @@ from utils import (
     print_benchmark_results
 )
 
-
 def evaluate_model(
     model: nn.Module,
     dataloader,
     device: torch.device = config.DEVICE,
     return_predictions: bool = False
 ) -> Tuple[float, float, np.ndarray, np.ndarray]:
-    """
-    Evaluate model on a dataset.
-    
-    Args:
-        model: PyTorch model to evaluate
-        dataloader: DataLoader for evaluation data
-        device: Device to evaluate on
-        return_predictions: Whether to return all predictions
-        
-    Returns:
-        Tuple of (accuracy, loss, true_labels, predicted_labels)
-        If return_predictions=True, also returns (all_images, all_probs)
-    """
+    # Evaluate model on a dataset.
     model.eval()
     model = model.to(device)
     
@@ -96,17 +79,7 @@ def generate_classification_report(
     pred_labels: np.ndarray,
     class_names: List[str] = config.CLASS_NAMES
 ) -> str:
-    """
-    Generate classification report with per-class metrics.
-    
-    Args:
-        true_labels: True labels
-        pred_labels: Predicted labels
-        class_names: List of class names
-        
-    Returns:
-        Classification report string
-    """
+    # Generate classification report with per-class metrics.
     report = classification_report(
         true_labels,
         pred_labels,
@@ -122,17 +95,7 @@ def calculate_per_class_metrics(
     pred_labels: np.ndarray,
     class_names: List[str] = config.CLASS_NAMES
 ) -> Dict[str, Dict[str, float]]:
-    """
-    Calculate per-class precision, recall, and F1-score.
-    
-    Args:
-        true_labels: True labels
-        pred_labels: Predicted labels
-        class_names: List of class names
-        
-    Returns:
-        Dictionary with per-class metrics
-    """
+    # Calculate per-class precision, recall, and F1-score.
     precision, recall, f1, support = precision_recall_fscore_support(
         true_labels,
         pred_labels,
@@ -158,15 +121,7 @@ def print_evaluation_results(
     metrics: Dict[str, Dict[str, float]],
     model_name: str = "Model"
 ):
-    """
-    Print evaluation results in a formatted table.
-    
-    Args:
-        accuracy: Overall accuracy
-        loss: Average loss
-        metrics: Per-class metrics dictionary
-        model_name: Name of the model
-    """
+    # Print evaluation results in a formatted table.
     print(f"\n{'='*80}")
     print(f"{model_name} - Evaluation Results")
     print(f"{'='*80}")
@@ -198,20 +153,7 @@ def comprehensive_evaluation(
     save_plots: bool = True,
     run_benchmark: bool = True
 ) -> Dict:
-    """
-    Perform comprehensive evaluation of a model.
-    
-    Args:
-        model: PyTorch model to evaluate
-        dataloader: DataLoader for evaluation data
-        model_name: Name of the model
-        device: Device to evaluate on
-        save_plots: Whether to save plots
-        run_benchmark: Whether to run performance benchmark
-        
-    Returns:
-        Dictionary with all evaluation results
-    """
+    # Perform comprehensive evaluation of a model.
     print(f"\n{'='*80}")
     print(f"Comprehensive Evaluation: {model_name}")
     print(f"{'='*80}\n")
@@ -295,18 +237,7 @@ def evaluate_from_checkpoint(
     dataloader,
     device: torch.device = config.DEVICE
 ) -> Dict:
-    """
-    Load model from checkpoint and evaluate.
-    
-    Args:
-        model_type: Type of model ('cnn' or 'resnet')
-        checkpoint_path: Path to model checkpoint
-        dataloader: DataLoader for evaluation data
-        device: Device to evaluate on
-        
-    Returns:
-        Dictionary with evaluation results
-    """
+    # Load model from checkpoint and evaluate.
     from model import create_model
     
     # Create model
@@ -327,7 +258,6 @@ def evaluate_from_checkpoint(
 
 
 if __name__ == "__main__":
-    # Test evaluation script
     print("Testing evaluation script...")
     
     try:

@@ -1,7 +1,3 @@
-"""
-Example usage script demonstrating all components of the plant disease classification system.
-Run this to see examples of data loading, model creation, training, and evaluation.
-"""
 import torch
 import config
 from data import create_dataloaders, print_dataset_info
@@ -10,9 +6,8 @@ from train import train_model
 from evaluate import comprehensive_evaluation
 from utils import plot_training_history
 
-
+# Example usage of the Plant Disease Classification project components.
 def example_data_pipeline():
-    """Example: Data pipeline and DataLoader creation."""
     print("\n" + "="*80)
     print("EXAMPLE 1: Data Pipeline")
     print("="*80 + "\n")
@@ -41,9 +36,8 @@ def example_data_pipeline():
     print(f"- Unique labels in batch: {labels.unique().tolist()}")
     print(f"- Class names: {[config.CLASS_NAMES[i] for i in labels.unique().tolist()]}")
 
-
+# Example: Model creation and parameter counting.
 def example_model_creation():
-    """Example: Model creation and inspection."""
     print("\n" + "="*80)
     print("EXAMPLE 2: Model Creation")
     print("="*80 + "\n")
@@ -76,9 +70,8 @@ def example_model_creation():
     print(f"ResNet output shape: {resnet_output.shape}")
     print(f"\nBoth models produce outputs for {config.NUM_CLASSES} classes ✓")
 
-
+# Example: Quick training demonstration (2 epochs).
 def example_quick_training():
-    """Example: Quick training demonstration (2 epochs)."""
     print("\n" + "="*80)
     print("EXAMPLE 3: Quick Training (2 epochs)")
     print("="*80 + "\n")
@@ -106,9 +99,8 @@ def example_quick_training():
     print("\nPlotting training curves...")
     plot_training_history(history, model_name="Quick Demo CNN")
 
-
+# Example: Model evaluation on test set.
 def example_model_evaluation():
-    """Example: Model evaluation (requires trained model)."""
     print("\n" + "="*80)
     print("EXAMPLE 4: Model Evaluation")
     print("="*80 + "\n")
@@ -146,9 +138,8 @@ def example_model_evaluation():
     print(f"Accuracy: {results['accuracy']:.2f}%")
     print(f"Loss: {results['loss']:.4f}")
 
-
+# Example: Single image prediction.
 def example_prediction():
-    """Example: Making predictions on a single image."""
     print("\n" + "="*80)
     print("EXAMPLE 5: Single Image Prediction")
     print("="*80 + "\n")
@@ -216,7 +207,6 @@ def example_prediction():
 
 
 def main():
-    """Run all examples."""
     print("\n" + "="*80)
     print("PLANT DISEASE CLASSIFICATION - EXAMPLE USAGE")
     print("="*80)
@@ -229,7 +219,7 @@ def main():
         example_model_creation()
         input("\nPress Enter to continue to next example...")
         
-        print("\n⚠️  The next example will train a model for 2 epochs (demo).")
+        print("\nThe next example will train a model for 2 epochs (demo).")
         response = input("Continue? (y/n): ")
         if response.lower() == 'y':
             example_quick_training()
@@ -255,7 +245,6 @@ def main():
     print("\nTo launch the web app:")
     print("  streamlit run app.py")
     print("="*80 + "\n")
-
 
 if __name__ == "__main__":
     main()

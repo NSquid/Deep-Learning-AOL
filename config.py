@@ -1,7 +1,3 @@
-"""
-Configuration file for plant disease classification project.
-Contains all hyperparameters and settings.
-"""
 import os
 import torch
 from pathlib import Path

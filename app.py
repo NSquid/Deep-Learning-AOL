@@ -2,13 +2,10 @@ import streamlit as st
 import torch
 from PIL import Image
 import numpy as np
-from pathlib import Path
-import json
 import config
 from model import create_model
 from data import get_val_test_transforms
 from utils import load_model
-
 
 # Page configuration
 st.set_page_config(
@@ -16,7 +13,6 @@ st.set_page_config(
     page_icon="🌿",
     layout="wide"
 )
-
 
 @st.cache_resource
 def load_trained_model(model_type: str = 'resnet'):
@@ -72,16 +68,13 @@ def display_prediction_results(predicted_class: str, confidence: float, all_prob
         # Color code based on disease
         if predicted_class == "Healthy":
             color = "green"
-            emoji = "✅"
         elif "Blight" in predicted_class:
             color = "red"
-            emoji = "⚠️"
         else:
             color = "orange"
-            emoji = "ℹ️"
         
         st.markdown(
-            f"<h2 style='color: {color};'>{emoji} {predicted_class}</h2>",
+            f"<h2 style='color: {color};'>{predicted_class}</h2>",
             unsafe_allow_html=True
         )
         st.metric("Confidence", f"{confidence * 100:.2f}%")
@@ -127,7 +120,7 @@ def display_disease_info(predicted_class: str):
         st.markdown(f"**Recommendation:** {info['recommendation']}")
 
 def show_sample_images():
-    st.markdown("### 🖼️ Sample Training Images by Class")
+    st.markdown("### Sample Training Images by Class")
     
     cols = st.columns(len(config.CLASS_NAMES))
     
@@ -204,7 +197,7 @@ def main():
     tab1, tab2 = st.tabs(["📸 Upload & Predict", "🖼️ Sample Images"])
     
     with tab1:
-        st.markdown("## Upload Plant Leaf Image")
+        st.markdown("### Upload Potatoes Plant Leaf Image")
         
         # File uploader
         uploaded_file = st.file_uploader(

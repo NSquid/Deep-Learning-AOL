@@ -1,7 +1,3 @@
-"""
-Data pipeline for plant disease classification.
-Handles dataset loading, preprocessing, augmentation, and DataLoader creation.
-"""
 import os
 from pathlib import Path
 from typing import Tuple, Optional, Dict, List
@@ -11,17 +7,8 @@ from torchvision import transforms
 from PIL import Image
 import config
 
-
-class PlantDiseaseDataset(Dataset):
-    """
-    PyTorch Dataset class for plant disease images.
-    
-    Args:
-        root_dir: Root directory containing class folders
-        transform: Optional transforms to apply to images
-        class_names: List of class names
-    """
-    
+# Custom Dataset for Plant Disease Classification
+class PlantDiseaseDataset(Dataset): 
     def __init__(
         self,
         root_dir: Path,
@@ -40,7 +27,6 @@ class PlantDiseaseDataset(Dataset):
             raise RuntimeError(f"No images found in {root_dir}")
     
     def _load_samples(self) -> List[Tuple[Path, int]]:
-        """Load all image file paths and their corresponding labels."""
         samples = []
         
         for class_name in self.class_names:
@@ -60,19 +46,10 @@ class PlantDiseaseDataset(Dataset):
         return samples
     
     def __len__(self) -> int:
-        """Return the number of samples in the dataset."""
         return len(self.samples)
     
+    # Get a sample from the dataset.
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int]:
-        """
-        Get a sample from the dataset.
-        
-        Args:
-            idx: Index of the sample
-            
-        Returns:
-            Tuple of (image tensor, label)
-        """
         img_path, label = self.samples[idx]
         
         try:
@@ -94,8 +71,8 @@ class PlantDiseaseDataset(Dataset):
                 blank_image = torch.zeros(3, config.IMAGE_SIZE, config.IMAGE_SIZE)
             return blank_image, label
     
+    # Calculate the distribution of samples across classes.
     def get_class_distribution(self) -> Dict[str, int]:
-        """Calculate the distribution of samples across classes."""
         distribution = {class_name: 0 for class_name in self.class_names}
         
         for _, label in self.samples:
@@ -104,14 +81,8 @@ class PlantDiseaseDataset(Dataset):
         
         return distribution
 
-
+# Get training data transformations with augmentation.
 def get_train_transforms() -> transforms.Compose:
-    """
-    Get training data transformations with augmentation.
-    
-    Returns:
-        Composed transforms for training data
-    """
     return transforms.Compose([
         transforms.Resize((config.IMAGE_SIZE, config.IMAGE_SIZE)),
         transforms.RandomRotation(config.ROTATION_DEGREES),
@@ -126,14 +97,8 @@ def get_train_transforms() -> transforms.Compose:
         transforms.Normalize(mean=config.IMAGENET_MEAN, std=config.IMAGENET_STD)
     ])
 
-
+# Get validation/test data transformations without augmentation.
 def get_val_test_transforms() -> transforms.Compose:
-    """
-    Get validation/test data transformations without augmentation.
-    
-    Returns:
-        Composed transforms for validation/test data
-    """
     return transforms.Compose([
         transforms.Resize((config.IMAGE_SIZE, config.IMAGE_SIZE)),
         transforms.ToTensor(),
@@ -148,19 +113,6 @@ def create_dataloaders(
     batch_size: int = config.BATCH_SIZE,
     num_workers: int = config.NUM_WORKERS
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
-    """
-    Create DataLoaders for training, validation, and testing.
-    
-    Args:
-        train_dir: Path to training data directory
-        val_dir: Path to validation data directory
-        test_dir: Path to test data directory
-        batch_size: Batch size for DataLoaders
-        num_workers: Number of worker processes for data loading
-        
-    Returns:
-        Tuple of (train_loader, val_loader, test_loader)
-    """
     # Create datasets
     train_dataset = PlantDiseaseDataset(
         root_dir=train_dir,
@@ -204,23 +156,12 @@ def create_dataloaders(
     
     return train_loader, val_loader, test_loader
 
-
 def get_dataset_statistics(
     train_dir: Path = config.TRAIN_DIR,
     val_dir: Path = config.VAL_DIR,
     test_dir: Path = config.TEST_DIR
 ) -> Dict[str, any]:
-    """
-    Calculate and return dataset statistics.
     
-    Args:
-        train_dir: Path to training data directory
-        val_dir: Path to validation data directory
-        test_dir: Path to test data directory
-        
-    Returns:
-        Dictionary containing dataset statistics
-    """
     # Create datasets without transforms to get raw counts
     train_dataset = PlantDiseaseDataset(train_dir, transform=None)
     val_dataset = PlantDiseaseDataset(val_dir, transform=None)
@@ -240,9 +181,8 @@ def get_dataset_statistics(
     
     return stats
 
-
+# Print comprehensive dataset information.
 def print_dataset_info():
-    """Print comprehensive dataset information."""
     try:
         stats = get_dataset_statistics()
         
@@ -276,7 +216,6 @@ def print_dataset_info():
 
 
 if __name__ == "__main__":
-    # Test the data pipeline
     print("Testing data pipeline...")
     print_dataset_info()
     
@@ -287,8 +226,7 @@ if __name__ == "__main__":
         print(f"Train batches: {len(train_loader)}")
         print(f"Validation batches: {len(val_loader)}")
         print(f"Test batches: {len(test_loader)}")
-        
-        # Test loading a batch
+
         print("\nLoading a sample batch...")
         images, labels = next(iter(train_loader))
         print(f"Batch shape: {images.shape}")
