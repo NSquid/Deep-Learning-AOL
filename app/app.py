@@ -5,6 +5,12 @@ import torch
 from PIL import Image
 import numpy as np
 
+# Tambahan untuk download model dari GDrive
+try:
+    import gdown
+except ImportError:
+    pass # Akan dihandle nanti jika belum ada
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(current_dir)
 if project_root not in sys.path:
@@ -14,6 +20,11 @@ import src.config as config
 from src.model import create_model
 from src.data import get_val_test_transforms
 from src.utils import load_model
+
+GDRIVE_IDS = {
+    'resnet': '1aA57Qzke_CY2zX9cmQrc5hI72rr-jqYb', 
+    'cnn': '1gSKi6USIRQ6ZVwZ7dI22kO51SY1JeaVx' 
+}
 
 # Page configuration
 st.set_page_config(
@@ -25,25 +36,53 @@ st.set_page_config(
 @st.cache_resource
 def load_trained_model(model_type: str = 'resnet'):
     try:
-        # Create model
+        # 1. Create model structure (Pastikan src/model.py support 'resnet' dan 'cnn')
         model = create_model(model_type, device=config.DEVICE)
         
-        # Load best checkpoint
-        checkpoint_path = config.CHECKPOINT_DIR / f"{model_type}_model_best.pth"
+        # 2. Define Checkpoint Path
+        # Nama file otomatis: resnet_model_best.pth ATAU cnn_model_best.pth
+        checkpoint_filename = f"{model_type}_model_best.pth"
+        checkpoint_path = config.CHECKPOINT_DIR / checkpoint_filename
         
+        # 3. Cek File & Download dari GDrive jika belum ada
+        if not checkpoint_path.exists():
+            
+            # Buat folder checkpoints jika belum ada
+            os.makedirs(config.CHECKPOINT_DIR, exist_ok=True)
+            
+            # Ambil ID sesuai model yang dipilih (resnet/cnn)
+            file_id = GDRIVE_IDS.get(model_type)
+            
+            # Cek apakah ID sudah diisi dengan benar (bukan placeholder)
+            if file_id and "MASUKKAN_ID" not in file_id:
+                try:
+                    import gdown
+                    url = f'https://drive.google.com/uc?id={file_id}'
+                    output = str(checkpoint_path)
+                    
+                    gdown.download(url, output, quiet=False)
+                    
+                except Exception as e:
+                    st.error(f"Gagal download. Pastikan internet lancar & ID benar. Error: {e}")
+            else:
+                st.error(f"ID Google Drive untuk **{model_type.upper()}** belum diisi di script 'app.py'!")
+                return None, False
+
+        # 4. Load Model Weights
         if checkpoint_path.exists():
+            # Load ke CPU (map_location) agar aman di Streamlit Cloud
             model, _, _ = load_model(model, checkpoint_path, config.DEVICE)
             model.eval()
             return model, True
         else:
-            st.warning(f"Checkpoint not found at {checkpoint_path}. Using untrained model for demo.")
+            # Jika file tetap tidak ada (gagal download atau ID kosong)
+            st.warning(f"File model tidak ditemukan. Menggunakan model {model_type} kosongan (untrained).")
             model.eval()
             return model, False
     
     except Exception as e:
         st.error(f"Error loading model: {e}")
         return None, False
-
 
 def predict_image(model, image: Image.Image):
     # Get transforms
@@ -132,29 +171,28 @@ def show_sample_images():
     
     cols = st.columns(len(config.CLASS_NAMES))
     
+    ASSETS_DIR = os.path.join(project_root, "assets")
+    
     for idx, class_name in enumerate(config.CLASS_NAMES):
-        # Ganti TEST_DIR dengan TRAIN_DIR
-        class_dir = config.TRAIN_DIR / class_name  # Asumsi TRAIN_DIR ada di config
+        # Cari folder spesifik kelas di dalam assets
+        class_dir = os.path.join(ASSETS_DIR, class_name)
         
-        if class_dir.exists():
-            # Get first image from training class directory
-            images = list(class_dir.glob('*.jpg')) + list(class_dir.glob('*.png'))
+        with cols[idx]:
+            st.markdown(f"**{class_name}**")
             
-            if images:
-                with cols[idx]:
-                    st.markdown(f"**{class_name}**")
-                    sample_image = Image.open(images[0])
+            if os.path.exists(class_dir):
+                # Ambil semua gambar jpg/png
+                images = [f for f in os.listdir(class_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+                
+                if images:
+                    # Tampilkan gambar pertama saja sebagai sampel
+                    img_path = os.path.join(class_dir, images[0])
+                    sample_image = Image.open(img_path)
                     st.image(sample_image, use_container_width=True)
-                    # Optional: Tampilkan jumlah gambar di folder
-                    st.caption(f"{len(images)} images")
+                else:
+                    st.info(f"No image in assets/{class_name}")
             else:
-                with cols[idx]:
-                    st.markdown(f"**{class_name}**")
-                    st.info("No training images found")
-        else:
-            with cols[idx]:
-                st.markdown(f"**{class_name}**")
-                st.warning("Training directory not found")
+                st.warning(f"Folder assets/{class_name} not found")
 
 
 def main():

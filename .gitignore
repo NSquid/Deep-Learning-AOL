@@ -6,3 +6,6 @@ Dataset/**/*.jpeg
 
 __pycache__/
 *.pyc
+
+.devcontainer/
+devcontainer.json
